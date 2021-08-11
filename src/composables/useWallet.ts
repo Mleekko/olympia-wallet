@@ -58,6 +58,7 @@ const connected = ref(false)
 const derivedAccountIndex: Ref<number> = ref(0)
 const hardwareAccount: Ref<AccountT | null> = ref(null)
 const hardwareAddress: Ref<string> = ref('')
+const showLedgerChooseAccount: Ref<boolean> = ref(false)
 const hardwareError: Ref<Error | null> = ref(null)
 const hardwareInteractionState: Ref<string> = ref('')
 const hasWallet = ref(false)
@@ -106,6 +107,7 @@ interface useWalletInterface {
   readonly hardwareAccount: Ref<AccountT | null>;
   readonly hardwareAddress: Ref<string | null>;
   readonly hardwareError: Ref<Error | null>;
+  readonly showLedgerChooseAccount: Ref<boolean>;
   readonly hardwareInteractionState: Ref<string>;
   readonly hasWallet: Ref<boolean>;
   readonly ledgerVerifyError: Ref<Error | null>;
@@ -123,10 +125,12 @@ interface useWalletInterface {
   accountRenamed: (newName: string) => void;
   addAccount: () => void;
   connectHardwareWallet: () => void;
+  hardwareWalletConfirmed: (accountIdx: number) => void;
   createWallet: (mnemonic: MnemomicT, pass: string, network: Network) => Promise<WalletT>;
   deleteLocalHardwareAddress: () => void;
   hideLedgerVerify: () => void;
   hideLedgerInteraction: () => void;
+  hideLedgerChooseAccount: () => void;
   initWallet: () => void;
   loginWithWallet: (password: string) => Promise<RadixT>;
   persistNodeUrl: (url: string) => Promise<void>;
@@ -251,12 +255,17 @@ const connectHardwareWallet = () => {
     switchAccount(hardwareAccount.value)
     return
   }
+  showLedgerChooseAccount.value = true
+}
+
+const hardwareWalletConfirmed = (accountIdx: number) => {
+  showLedgerChooseAccount.value = false
   hardwareError.value = null
   hardwareInteractionState.value = 'DERIVING'
 
   const data = {
     keyDerivation: HDPathRadix.create({
-      address: { index: 0, isHardened: true }
+      address: { index: accountIdx, isHardened: true }
     }),
     hardwareWalletConnection: HardwareWalletLedger.create({
       send: sendAPDU
@@ -270,7 +279,7 @@ const connectHardwareWallet = () => {
   }).then((hwAccount: AccountT) => {
     if (!hardwareAddress.value && activeNetwork.value) {
       saveHardwareWalletAddress(hwAccount.address.toString(), activeNetwork.value)
-      saveAccountName(hwAccount.address.toString(), 'Hardware Account')
+      saveAccountName(hwAccount.address.toString(), 'Hardware Acc #' + accountIdx)
       hardwareAddress.value = hwAccount.address.toString()
     }
     activeAccount.value = hwAccount
@@ -340,6 +349,10 @@ const hideLedgerVerify = () => {
   showLedgerVerify.value = false
 }
 
+const hideLedgerChooseAccount = () => {
+  showLedgerChooseAccount.value = false
+}
+
 export default function useWallet (router: Router): useWalletInterface {
   const accountRenamed = (newName: string) => {
     if (!activeAddress.value) return
@@ -369,6 +382,7 @@ export default function useWallet (router: Router): useWalletInterface {
     derivedAccountIndex,
     hardwareAccount,
     hardwareAddress,
+    showLedgerChooseAccount,
     hardwareError,
     hardwareInteractionState,
     hasWallet,
@@ -420,10 +434,12 @@ export default function useWallet (router: Router): useWalletInterface {
     accountRenamed,
     addAccount,
     connectHardwareWallet,
+    hardwareWalletConfirmed,
     createWallet,
     deleteLocalHardwareAddress,
     hideLedgerInteraction,
     hideLedgerVerify,
+    hideLedgerChooseAccount,
     initWallet,
     persistNodeUrl,
     setDeleteHWWalletPrompt,
