@@ -117,6 +117,12 @@
         @saved="accountRenamed"
       />
 
+      <wallet-ledger-choose-account-modal
+        v-if="showLedgerChooseAccount"
+        @hardwareWalletConfirmed="hardwareWalletConfirmed"
+        @closeLedgerChooseAccountModal="showLedgerChooseAccount = false"
+      />
+
       <wallet-ledger-verify-address-modal
       v-if="showLedgerVerify"
       :hardwareError="ledgerVerifyError"
@@ -145,10 +151,9 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeMount, onUnmounted, Ref } from 'vue'
-import { Subscription, interval, Subject, Observable, combineLatest, from, BehaviorSubject, ReplaySubject, firstValueFrom } from 'rxjs'
+import { Subscription, interval, Subject, Observable, combineLatest, BehaviorSubject, ReplaySubject, firstValueFrom } from 'rxjs'
 import {
   AccountAddressT,
-  Radix,
   TransferTokensOptions,
   StakePositions,
   TokenBalances,
@@ -175,7 +180,6 @@ import {
   TokenBalance,
   MessageInTransaction,
   ExecutedTransaction,
-  Network,
   TransactionStateError
 } from '@radixdlt/application'
 import { safelyUnwrapAmount } from '@/helpers/validateRadixTypes'
@@ -205,9 +209,11 @@ import {
 import { useI18n } from 'vue-i18n'
 import { sendAPDU } from '@/actions/vue/hardware-wallet'
 import { HardwareWalletLedger } from '@radixdlt/hardware-ledger'
+import WalletLedgerChooseAccountModal from '@/views/Wallet/WalletLedgerChooseAccountModal.vue'
 import WalletLedgerVerifyAddressModal from '@/views/Wallet/WalletLedgerVerifyAddressModal.vue'
 import WalletLedgerDeleteModal from '@/views/Wallet/WalletLedgerDeleteModal.vue'
 import { radixConnection } from '@/helpers/network'
+import { HDPathRadix } from '@radixdlt/crypto'
 
 const PAGE_SIZE = 50
 
@@ -228,6 +234,7 @@ const WalletIndex = defineComponent({
     WalletTransaction,
     WalletLoading,
     WalletLedgerInteractionModal,
+    WalletLedgerChooseAccountModal,
     WalletLedgerVerifyAddressModal,
     WalletLedgerDeleteModal
   },
@@ -271,6 +278,7 @@ const WalletIndex = defineComponent({
     const selectedCurrency: Ref<TokenBalance | null> = ref(null)
     const nativeTokenBalance: Ref<TokenBalance | null> = ref(null)
     const activeMessage: Ref<string> = ref('')
+    const showLedgerChooseAccount: Ref<boolean> = ref(false)
     const showLedgerVerify: Ref<boolean> = ref(false)
     const ledgerVerifyError: Ref<Error | null> = ref(null)
     const ledgerTxError: Ref<Error | null> = ref(null)
@@ -658,10 +666,17 @@ const WalletIndex = defineComponent({
         switchAccount(hardwareAccount.value)
         return
       }
+      showLedgerChooseAccount.value = true
+    }
+
+    const hardwareWalletConfirmed = (accountIdx: number) => {
+      showLedgerChooseAccount.value = false
       hardwareWalletError.value = null
       hardwareInteractionState.value = 'DERIVING'
       radix.deriveHWAccount({
-        keyDerivation: 'next',
+        keyDerivation: HDPathRadix.create({
+          address: { index: accountIdx, isHardened: true }
+        }),
         hardwareWalletConnection: HardwareWalletLedger.create({
           send: sendAPDU
         }),
@@ -673,7 +688,7 @@ const WalletIndex = defineComponent({
           hardwareAccount.value = hwAccount
           if (!hardwareAddress.value) {
             saveHardwareWalletAddress(hwAccount.address.toString())
-            saveAccountName(hwAccount.address.toString(), 'Hardware Wallet')
+            saveAccountName(hwAccount.address.toString(), 'Hardware Wally #' + accountIdx)
             hardwareAddress.value = hwAccount.address.toString()
           }
           sidebar.value = 'default'
@@ -734,6 +749,7 @@ const WalletIndex = defineComponent({
       hardwareInteractionState,
       decryptedMessages,
       accountNameIndex,
+      showLedgerChooseAccount,
       showLedgerVerify,
       ledgerVerifyError,
       ledgerTxError,
@@ -759,6 +775,7 @@ const WalletIndex = defineComponent({
       nextPage,
       previousPage,
       connectHardwareWallet,
+      hardwareWalletConfirmed,
       verifyHardwareWalletAddress,
       decryptMessage,
       accountRenamed,
