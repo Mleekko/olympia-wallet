@@ -19,6 +19,7 @@
     </div>
 
     <wallet-confirm-transaction-modal v-if="shouldShowConfirmation" />
+    <wallet-ledger-choose-account-modal v-if="showLedgerChooseAccount" />
     <wallet-ledger-verify-address-modal v-if="showLedgerVerify" />
     <wallet-ledger-interaction-modal v-if="hardwareInteractionState && hardwareInteractionState.length > 0" />
     <wallet-ledger-delete-modal v-if="showDeleteHWWalletPrompt" />
@@ -32,6 +33,7 @@ import WalletConfirmTransactionModal from './WalletConfirmTransactionModal.vue'
 import WalletSidebar from './WalletSidebar.vue'
 import WalletLedgerInteractionModal from '@/views/Wallet/WalletLedgerInteractionModal.vue'
 import WalletLoading from './WalletLoading.vue'
+import WalletLedgerChooseAccountModal from '@/views/Wallet/WalletLedgerChooseAccountModal.vue'
 import WalletLedgerVerifyAddressModal from '@/views/Wallet/WalletLedgerVerifyAddressModal.vue'
 import WalletLedgerDeleteModal from '@/views/Wallet/WalletLedgerDeleteModal.vue'
 import { useRouter, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
@@ -42,6 +44,7 @@ const WalletIndex = defineComponent({
     WalletConfirmTransactionModal,
     WalletSidebar,
     WalletLedgerInteractionModal,
+    WalletLedgerChooseAccountModal,
     WalletLedgerVerifyAddressModal,
     WalletLedgerDeleteModal,
     WalletLoading
@@ -58,6 +61,7 @@ const WalletIndex = defineComponent({
       hasWallet,
       radix,
       showDeleteHWWalletPrompt,
+      showLedgerChooseAccount,
       showLedgerVerify,
       walletLoaded,
       waitUntilAllLoaded
@@ -88,6 +92,7 @@ const WalletIndex = defineComponent({
       activeNetwork,
       shouldShowConfirmation,
       showDeleteHWWalletPrompt,
+      showLedgerChooseAccount,
       showLedgerVerify,
       isTestNet,
       walletLoaded
