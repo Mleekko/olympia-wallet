@@ -127,7 +127,7 @@ import { useI18n } from 'vue-i18n'
 
 interface StakeForm {
   validator: string;
-  amount: number;
+  amount: string;
 }
 
 const WalletStaking = defineComponent({
@@ -246,7 +246,7 @@ const WalletStaking = defineComponent({
       const nativeTokenBalance = tokenBalanceFor(nativeToken.value)
       if (!meta.value.valid || !nativeTokenBalance) return
       const safeAddress = safelyUnwrapValidator(values.validator)
-      const safeAmount = safelyUnwrapAmount(Number(values.amount))
+      const safeAmount = safelyUnwrapAmount(values.amount)
       const greaterThanZero = safeAmount && validateGreaterThanZero(safeAmount)
       const validAmount = safeAmount && validateAmountOfType(safeAmount, nativeToken.value)
 
