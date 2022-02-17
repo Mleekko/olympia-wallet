@@ -156,7 +156,7 @@ import { firstValueFrom } from 'rxjs'
 
 interface StakeForm {
   validator: string;
-  amount: number;
+  amount: string;
 }
 
 const WalletStaking = defineComponent({
@@ -310,7 +310,7 @@ const WalletStaking = defineComponent({
       const nativeTokenBalance = tokenBalanceFor(nativeToken.value)
       if (!meta.value.valid || !nativeTokenBalance) return
       const safeAddress = safelyUnwrapValidator(values.validator)
-      const safeAmount = safelyUnwrapAmount(Number(values.amount))
+      const safeAmount = safelyUnwrapAmount(values.amount)
       const greaterThanZero = safeAmount && validateGreaterThanZero(safeAmount)
       const validAmount = safeAmount && validateAmountOfType(safeAmount, nativeToken.value)
 
@@ -340,12 +340,10 @@ const WalletStaking = defineComponent({
       if (!nativeToken.value) return
       const safeAddress = safelyUnwrapValidator(values.validator)
       if (!safeAddress) return
-      const safeOneHundredPercent = safelyUnwrapAmount(Number('0.0000000000000001'))
-      if (!safeOneHundredPercent) return
 
       unstakeTokens({
         from_validator: safeAddress,
-        unstake_percentage: safeOneHundredPercent,
+        unstake_percentage: 100,
         tokenIdentifier: nativeToken.value.rri
       })
     }
