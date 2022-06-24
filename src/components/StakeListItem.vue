@@ -164,7 +164,7 @@ const StakeListItem = defineComponent({
     }
 
     const explorerUrl: ComputedRef<string> = computed(() =>
-      validator.value ? `${explorerUrlBase}/#/validators/${validatorAddress.value.toString()}` : `${explorerUrlBase}/#/validators/`
+      validator.value ? `${explorerUrlBase.value}/#/validators/${validatorAddress.value.toString()}` : `${explorerUrlBase.value}/#/validators/`
     )
 
     const inTopOneHundred: ComputedRef<boolean> = computed(() =>

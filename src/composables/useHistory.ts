@@ -1,4 +1,4 @@
-import { Radix, AccountAddressT, SimpleExecutedTransaction, ExecutedTransaction } from '@radixdlt/application'
+import { Radix, AccountAddressWrapperT, SimpleExecutedTransaction, ExecutedTransaction } from '@radixdlt/application'
 import { computed, ComputedRef, Ref, ref } from 'vue'
 import { firstValueFrom, interval, Subscription } from 'rxjs'
 
@@ -16,7 +16,7 @@ const transactions: Ref<SimpleExecutedTransaction[]> = ref([])
 const isDecrypting: Ref<boolean> = ref(false)
 let transactionSub: Subscription | null
 
-const activeAddress: Ref<AccountAddressT | null> = ref(null)
+const activeAddress: Ref<AccountAddressWrapperT | null> = ref(null)
 
 interface useHistoryInterface {
   canGoBack: ComputedRef<boolean>;
@@ -31,13 +31,13 @@ interface useHistoryInterface {
   nextPage: () => void;
   previousPage: () => void;
   resetHistory: () => void;
-  updateActiveAccount: (addr: AccountAddressT) => void;
+  updateActiveAccount: (addr: AccountAddressWrapperT) => void;
 }
 
 export default function useHistory (radix: ReturnType<typeof Radix.create>): useHistoryInterface {
   const fetchTransactions = async (cursor?: string) => {
     if (!activeAddress.value) return
-    const params = { size: PAGE_SIZE, address: activeAddress.value, cursor }
+    const params = { size: PAGE_SIZE, address: activeAddress.value.getAddress(), cursor }
     const data = await firstValueFrom(radix.ledger.transactionHistory(params))
     transactions.value = data.transactions
     loadingHistory.value = false
@@ -64,7 +64,7 @@ export default function useHistory (radix: ReturnType<typeof Radix.create>): use
     activeCursor.value = ''
   }
 
-  const updateActiveAccount = (addr: AccountAddressT) => {
+  const updateActiveAccount = (addr: AccountAddressWrapperT) => {
     activeAddress.value = addr
   }
 

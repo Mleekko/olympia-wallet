@@ -1,5 +1,5 @@
 import { computed, ref, Ref } from 'vue'
-import { AccountAddressT, Radix, RadixT, ResourceIdentifierT, Token } from '@radixdlt/application'
+import { AccountAddressWrapperT, Radix, RadixT, ResourceIdentifierT, Token } from '@radixdlt/application'
 import { firstValueFrom, interval, Subscription } from 'rxjs'
 import { AccountBalancesEndpoint } from '@radixdlt/application/dist/api/open-api/_types'
 
@@ -24,11 +24,11 @@ const gatherRelevantTokens = async (radix: ReturnType<typeof Radix.create>, bala
 }
 
 export default function useTokenBalances (radix: ReturnType<typeof Radix.create>) {
-  const fetchBalancesForAddress = async (address: AccountAddressT) => {
+  const fetchBalancesForAddress = async (address: AccountAddressWrapperT) => {
     // Unsubscribe from previous tokenBalancesSub
 
     // Fetch token balances for address
-    const res = await firstValueFrom(radix.ledger.tokenBalancesForAddress(address))
+    const res = await firstValueFrom(radix.ledger.tokenBalancesForAddress(address.getAddress()))
     tokenBalances.value = res
 
     await gatherRelevantTokens(radix, res)

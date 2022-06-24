@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, toRef, computed, ComputedRef } from 'vue'
-import { AccountAddressT } from '@radixdlt/application'
+import { AccountAddressT, AccountAddressWrapperT } from '@radixdlt/application'
 import ClickToCopy from '@/components/ClickToCopy.vue'
 import { formatWalletAddressForDisplay } from '@/helpers/formatter'
 import { useWallet, useSidebar } from '@/composables'
@@ -45,7 +45,7 @@ const AccountListItem = defineComponent({
 
   props: {
     address: {
-      type: Object as PropType<AccountAddressT>,
+      type: Object as PropType<AccountAddressWrapperT | AccountAddressT>,
       required: true
     },
     shouldShowEdit: {

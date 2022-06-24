@@ -27,7 +27,7 @@ import {
   Token,
   WalletT,
   walletError,
-  ExecutedTransaction
+  ExecutedTransaction, AccountAddressWrapperT
 } from '@radixdlt/application'
 import { Decoded } from '@radixdlt/application/dist/api/open-api/_types'
 
@@ -76,7 +76,7 @@ export type WalletError = ErrorT<ErrorCategory.WALLET>
 const accountNames: Ref<AccountName[]> = ref([])
 const accounts: Ref<AccountsT | null> = ref(null)
 const activeAccount: Ref<AccountT | null> = ref(null)
-const activeAddress: Ref<AccountAddressT | null> = ref(null)
+const activeAddress: Ref<AccountAddressWrapperT | null> = ref(null)
 const activeNetwork: Ref<Network | null> = ref(null)
 const connected = ref(false)
 const derivedAccountIndex: Ref<number> = ref(0)
@@ -196,10 +196,10 @@ const confirmTransaction = () => {
       .flatMap((device) => device.addresses)
       .find((addr: HardwareAddress) => {
         if (!activeAddress.value) return false
-        return addr.address.equals(activeAddress.value)
+        return addr.address.equals(activeAddress.value?.getAddress())
       })
 
-  if (activeAddress.value && hardwareAddress && activeAddress.value?.equals(hardwareAddress.address)) {
+  if (activeAddress.value && hardwareAddress && activeAddress.value?.getAddress().equals(hardwareAddress.address)) {
     ledgerState.value = 'hw-signing'
   }
   userDidConfirm.next(true)
@@ -370,7 +370,7 @@ const stakeTokens = async (stakeTokensInput: StakeTokensInput) => {
 
 interface useWalletInterface {
   readonly accounts: Ref<AccountsT | null>;
-  readonly activeAddress: Ref<AccountAddressT | null>;
+  readonly activeAddress: Ref<AccountAddressWrapperT | null>;
   readonly activeNetwork: Ref<Network | null>;
   readonly connected: ComputedRef<boolean>;
   readonly derivedAccountIndex: Ref<number>;
@@ -418,7 +418,7 @@ interface useWalletInterface {
   transferTokens: (input: TransferTokensInput, message: MessageInTransaction, sc: Decoded.TokenAmount) => void;
   unstakeTokens: (input: UnstakeTokensInput) => void;
 
-  accountNameFor: (address: AccountAddressT) => string;
+  accountNameFor: (address: AccountAddressWrapperT | AccountAddressT) => string;
   accountRenamed: (newName: string) => void;
   addAccount: () => Promise<AccountT | false>;
   createWallet: (mnemonic: MnemomicT, pass: string, network: Network) => Promise<WalletT>;
@@ -492,13 +492,13 @@ const initWallet = async (router: Router) => {
   latestAddress.value = await getLatestAccountAddress(networkRes)
   accountNames.value = await getAccountNames()
   versionNumber.value = await getVersionNumber()
-  updateAvailable.value = await getIsUpdateAvailable()
+  // updateAvailable.value = await getIsUpdateAvailable()
   hardwareDevices.value = await getHardwareDevices(networkRes)
   nativeToken.value = await firstValueFrom(radix.ledger.nativeToken(networkRes))
   await fetchAccountsForNetwork(networkRes)
 
   activeAccount.value = account
-  activeAddress.value = account.address
+  activeAddress.value = AccountAddress.wrap(account.address)
   activeNetwork.value = networkRes
 
   const latestIsActive = activeAddress.value
@@ -543,13 +543,14 @@ const setActiveAddress = async (accountAddressValue: string) => {
   if (address.isErr()) {
     throw Error('Invalid Address')
   }
-  activeAddress.value = address.value
+  activeAddress.value = AccountAddress.wrap(address.value)
   accounts.value = await firstValueFrom(radix.accounts)
   switchAddress(address.value)
 }
 
-const accountNameFor = (accountAddress: AccountAddressT): string => {
-  const accountName = accountNames.value.find((accountName: AccountName) => accountAddress.toString() === accountName.address)
+const accountNameFor = (accountAddress: AccountAddressWrapperT | AccountAddressT): string => {
+  const addressString = accountAddress.toString()
+  const accountName = accountNames.value.find((accountName: AccountName) => addressString === accountName.address)
   return accountName ? accountName.name : ''
 }
 
@@ -698,7 +699,7 @@ const activateAccount = async () : Promise<AccountT> => {
   isActivating.value = true
   const localAccount = accounts.value?.all.find((account: AccountT) => {
     if (!activeAddress.value) return false
-    return account.address.equals(activeAddress.value) && account.signingKey.isLocalHDSigningKey
+    return account.address.equals(activeAddress.value?.getAddress()) && account.signingKey.isLocalHDSigningKey
   })
 
   if (localAccount) {
@@ -714,7 +715,7 @@ const activateAccount = async () : Promise<AccountT> => {
       .flatMap((device) => device.addresses)
       .find((addr: HardwareAddress) => {
         if (!activeAddress.value) return false
-        return addr.address.equals(activeAddress.value)
+        return addr.address.equals(activeAddress.value?.getAddress())
       })
   if (!hardwareAddress) throw Error('Invalid Address')
 
@@ -760,7 +761,7 @@ export default function useWallet (router: Router): useWalletInterface {
 
     const shouldNavigateAwayFromForgottenDevice = hardwareDevices.value[hardwareDeviceIndexToForget.value]?.addresses.find((a) => {
       if (!activeAddress.value) return false
-      return a.address.equals(activeAddress.value)
+      return a.address.equals(activeAddress.value?.getAddress())
     })
 
     if (shouldNavigateAwayFromForgottenDevice) {

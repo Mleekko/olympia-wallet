@@ -33,7 +33,7 @@
       <template v-slot:content>
         <p class="mb-5">{{ $t('settings.confirmUnhideToken', { tokenName: tokenToUnhide ? tokenToUnhide.name : 'emunie' }) }}</p>
         <div class="flex flex-row space-x-5 justify-center">
-        <AppButtonCancel class="w-44" @click="tokenToUnhide = ''">{{ $t('general.cancel') }}</AppButtonCancel>
+        <AppButtonCancel class="w-44" @click="tokenToUnhide = null">{{ $t('general.cancel') }}</AppButtonCancel>
         <AppButtonSubmit class="w-44" @click="handleUnhideToken">{{ $t('settings.unhideBalanceSubmit') }}</AppButtonSubmit>
       </div>
       </template>
@@ -51,7 +51,7 @@ import LoadingIcon from '@/components/LoadingIcon.vue'
 import HiddenTokenBalanceListItem from '@/components/HiddenTokenBalanceListItem.vue'
 import { useRouter } from 'vue-router'
 import { useTokenBalances, useWallet } from '@/composables'
-import { AccountAddressT, AccountT, Token } from '@radixdlt/application'
+import { AccountAddressT, AccountAddressWrapperT, AccountT, Token } from '@radixdlt/application'
 
 export default defineComponent({
   components: {
@@ -89,7 +89,7 @@ export default defineComponent({
     /* ------
      *  Functions
      */
-    const computeListOfHiddenTokens = (newActiveAddress: AccountAddressT) => {
+    const computeListOfHiddenTokens = (newActiveAddress: AccountAddressWrapperT) => {
       loading.value = true
       fetchBalancesForAddress(newActiveAddress)
         .then(getHiddenTokens)

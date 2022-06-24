@@ -27,6 +27,6 @@ export const decodeMessage = (message: string): string | false => {
 }
 
 export const isEncrypted = (message: string): boolean => {
-  if (!/^(00|01|30)[0-9a-fA-F]+$/.test(message)) return false
+  if (!/^(00|01|3030)[0-9a-fA-F]+$/.test(message)) return false
   return !Message.isPlaintext(message)
 }

@@ -1,6 +1,6 @@
-import { AccountAddressT, HRP, ValidatorAddressT } from '@radixdlt/application'
+import { AccountAddressT, AccountAddressWrapperT, HRP, ValidatorAddressT } from '@radixdlt/application'
 
-export const formatWalletAddressForDisplay = function (address: AccountAddressT): string {
+export const formatWalletAddressForDisplay = function (address: AccountAddressT | AccountAddressWrapperT): string {
   const s = address.toString()
   return s.substring(0, 3) + '...' + s.substring(s.length - 9)
 }

@@ -154,9 +154,9 @@ const WalletHistory = defineComponent({
           .flatMap((device) => device.addresses)
           .find((addr: HardwareAddress) => {
             if (!activeAddress.value) return false
-            return addr.address.equals(activeAddress.value)
+            return addr.address.equals(activeAddress.value.getAddress())
           })
-      return isDecrypting.value && !!activeAddress.value && !!hardwareAddress && activeAddress.value.equals(hardwareAddress.address)
+      return isDecrypting.value && !!activeAddress.value && !!hardwareAddress && activeAddress.value.getAddress().equals(hardwareAddress.address)
     })
 
     const activateThenDecrypt = async (data: ExecutedTransaction) => {

@@ -13,7 +13,7 @@
 <script lang="ts">
 import { copyToClipboard } from '@/actions/vue/create-wallet'
 import { defineComponent, PropType } from 'vue'
-import { AmountT } from '@radixdlt/application'
+import { AmountOrUnsafeInput, AmountT, AmountWrapperT } from '@radixdlt/application'
 import BigNumber from 'bignumber.js'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
@@ -107,7 +107,7 @@ export const asBigNumber = (amount: AmountT, showFull = false) : string => {
 const BigAmount = defineComponent({
   props: {
     amount: {
-      type: Object as PropType<AmountT>,
+      type: Object as PropType<AmountWrapperT | AmountOrUnsafeInput>,
       required: true
     },
     showMaxUnstakeText: {
@@ -124,18 +124,22 @@ const BigAmount = defineComponent({
   },
 
   computed: {
+    amountBigNumber (): BigNumber {
+      const bigNumber = new BigNumber(this.amount.toString())
+      return bigNumber.shiftedBy(-18) // Atto
+    },
     numberForDisplay (): string {
-      return asBigNumber(this.amount, false)
+      return formattBigNumber(this.amountBigNumber, false)
     },
 
     fullNumber (): string {
-      return asBigNumber(this.amount, true)
+      return formattBigNumber(this.amountBigNumber, true)
     }
   },
 
   methods: {
     copyText () {
-      const value = asBigNumber(this.amount, true).replaceAll(',', '')
+      const value = this.fullNumber.replaceAll(',', '')
       this.toast.success('Copied to Clipboard')
       copyToClipboard(value)
     }
