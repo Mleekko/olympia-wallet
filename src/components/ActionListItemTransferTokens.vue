@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { ExecutedTransferTokensAction, AccountAddressT } from '@radixdlt/application'
+import { ExecutedTransferTokensAction, AccountAddressT, AccountAddressWrapperT } from '@radixdlt/application'
 import ClickToCopy from '@/components/ClickToCopy.vue'
 import { formatWalletAddressForDisplay } from '@/helpers/formatter'
 import BigAmount from '@/components/BigAmount.vue'
@@ -53,7 +53,7 @@ const ActionListItemTransferTokens = defineComponent({
       required: true
     },
     activeAddress: {
-      type: Object as PropType<AccountAddressT>,
+      type: Object as PropType<AccountAddressWrapperT>,
       required: true
     },
     index: {
@@ -70,7 +70,7 @@ const ActionListItemTransferTokens = defineComponent({
   },
 
   methods: {
-    displayAddress (address: AccountAddressT): string {
+    displayAddress (address: AccountAddressWrapperT): string {
       return formatWalletAddressForDisplay(address)
     }
   }

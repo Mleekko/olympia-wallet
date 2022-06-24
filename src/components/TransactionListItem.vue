@@ -58,7 +58,7 @@
           <span v-else-if="customTxnDisplayType === 'COMPLEX'">{{ $t('history.complexTransaction') }}</span>
         </div>
       </div>
-      <div v-if="transaction.message" class="text-sm px-3 py-2 bg-rGrayLightest bg-opacity-60 flex items-center">
+      <div v-if="message" class="text-sm px-3 py-2 bg-rGrayLightest bg-opacity-60 flex items-center">
         <div class="h-5 w-6 flex items-center justify-center -ml-1 mr-1">
           <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5" v-if="messageIsEncrypted">
             <path d="M2.04883 4.93512V3.79987C2.04883 2.25355 3.30238 1 4.8487 1C6.39502 1 7.64857 2.25355 7.64857 3.79987V4.93512" stroke="#7A99AC" stroke-width="1.5" stroke-miterlimit="10"/>
@@ -71,7 +71,7 @@
             <line x1="6.2002" y1="9" x2="13.7002" y2="9" stroke="#7A99AC"/>
           </svg>
         </div>
-        <transaction-message v-if="transaction.message" :message="transaction.message" :decryptedMessage="decryptedMessage" @decrypt="decrypt"/>
+        <transaction-message v-if="message" :message="message" :decryptedMessage="decryptedMessage" @decrypt="decrypt"/>
       </div>
      </div>
     <div class="bg-rGrayLightest flex items-center justify-center px-3">
@@ -87,14 +87,20 @@
 
 <script lang="ts">
 import { computed, ComputedRef, defineComponent, PropType, toRef } from 'vue'
-import { ExecutedTransaction, AccountAddressT, Token, ExecutedAction, ActionType, Message } from '@radixdlt/application'
+import {
+  ExecutedTransaction,
+  Token,
+  ExecutedAction,
+  ActionType,
+  AccountAddressWrapperT, Message
+} from '@radixdlt/application'
 import { DateTime } from 'luxon'
 import ActionListItemStakeTokens from '@/components/ActionListItemStakeTokens.vue'
 import ActionListItemUnstakeTokens from '@/components/ActionListItemUnstakeTokens.vue'
 import ActionListItemTransferTokens from '@/components/ActionListItemTransferTokens.vue'
 import ActionListItemOther from '@/components/ActionListItemOther.vue'
 import TransactionMessage from './TransactionMessage.vue'
-import { isEncrypted } from '@/helpers/message'
+import { decodeMessage, isEncrypted } from '@/helpers/message'
 
 export default defineComponent({
   components: {
@@ -115,7 +121,7 @@ export default defineComponent({
       required: true
     },
     activeAddress: {
-      type: Object as PropType<AccountAddressT>,
+      type: Object as PropType<AccountAddressWrapperT>,
       required: true
     },
     pending: {
@@ -137,23 +143,24 @@ export default defineComponent({
     }
   },
 
-  setup (props) {
+  setup (props, context) {
     const explorerUrl: ComputedRef<string> = computed(() =>
       `${props.explorerUrlBase}/#/transactions/${props.transaction.txID}`
     )
 
     const relatedActions: ComputedRef<ExecutedAction[]> = computed(() => {
+      const walletAddress = props.activeAddress.toString()
       return props.transaction.actions.filter((action: ExecutedAction) => {
         let related
         switch (action.type) {
           case ActionType.TOKEN_TRANSFER:
-            related = action.to_account.equals(props.activeAddress) || action.from_account.equals(props.activeAddress)
+            related = action.to_account.getAddressString() === walletAddress || action.from_account.getAddressString() === walletAddress
             break
           case ActionType.STAKE_TOKENS:
-            related = action.from_account.equals(props.activeAddress)
+            related = action.from_account.equals(props.activeAddress.getAddress())
             break
           case ActionType.UNSTAKE_TOKENS:
-            related = action.to_account.equals(props.activeAddress)
+            related = action.to_account.equals(props.activeAddress.getAddress())
             break
           case ActionType.OTHER:
             related = false
@@ -176,26 +183,29 @@ export default defineComponent({
       return DateTime.fromJSDate(transaction.value.sentAt).toLocaleString(DateTime.DATETIME_SHORT)
     })
 
-    const messageIsEncrypted = computed(() => {
-      if (!transaction.value.message) return false
-      return isEncrypted(transaction.value.message)
+    const message = computed(() => {
+      return transaction.value.message || ''
     })
+
+    const messageIsEncrypted = computed(() => {
+      if (!message.value) return false
+      return isEncrypted(message.value)
+    })
+
+    const decrypt = () => {
+      context.emit('decryptMessage', transaction.value)
+    }
 
     return {
       customTxnDisplayType,
       explorerUrl,
       relatedActions,
       sentAt,
-      messageIsEncrypted
+      message,
+      messageIsEncrypted,
+      decrypt
     }
   },
-
-  methods: {
-    decrypt () {
-      this.$emit('decryptMessage', this.transaction)
-    }
-  },
-
   emits: ['decryptMessage']
 })
 </script>

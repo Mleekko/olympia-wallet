@@ -242,7 +242,7 @@ const WalletSidebarAccounts = defineComponent({
       isActiveDevice (hardwareDevice: HardwareDevice) {
         return !!hardwareDevice.addresses.find((hwaddr) => {
           if (!activeAddress.value) return false
-          return hwaddr.address.equals(activeAddress.value)
+          return hwaddr.address.equals(activeAddress.value.getAddress())
         })
       }
     }

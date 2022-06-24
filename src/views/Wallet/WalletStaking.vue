@@ -149,7 +149,15 @@
 </template>
 
 <script lang="ts">
-import { AccountAddressT, Amount, AmountT, StakeTokensInput, UnstakeTokensInput, ValidatorAddressT } from '@radixdlt/application'
+import {
+  AccountAddressT,
+  AccountAddressWrapperT,
+  Amount,
+  AmountT,
+  StakeTokensInput,
+  UnstakeTokensInput,
+  ValidatorAddressT
+} from '@radixdlt/application'
 import { computed, defineComponent, ComputedRef, watch, Ref, ref } from 'vue'
 import { useForm } from 'vee-validate'
 import StakeListItem from '@/components/StakeListItem.vue'
@@ -237,16 +245,16 @@ const WalletStaking = defineComponent({
      *  Side Effects
      */
 
-    const fetchData = async (addr: AccountAddressT) => {
-      tokenBalances.value = await firstValueFrom(radix.ledger.tokenBalancesForAddress(addr))
+    const fetchData = async (addr: AccountAddressWrapperT) => {
+      tokenBalances.value = await firstValueFrom(radix.ledger.tokenBalancesForAddress(addr.getAddress()))
       nativeTokenBalance.value = tokenBalances.value.account_balances.liquid_balances.find((lb) => {
         if (!nativeToken.value) return false
         return lb.token_identifier.rri.equals(nativeToken.value.rri)
       }) || null
-      await fetchValidatorsAndStakes(addr)
+      await fetchValidatorsAndStakes(addr.getAddress())
     }
 
-    const fetchAndRefreshData = async (addr: AccountAddressT) => {
+    const fetchAndRefreshData = async (addr: AccountAddressWrapperT) => {
       if (refreshSub.value) {
         refreshSub.value.unsubscribe()
         refreshSub.value = null

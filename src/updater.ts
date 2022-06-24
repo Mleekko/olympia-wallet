@@ -36,5 +36,5 @@ export const downloadUpdate = (): void => {
 }
 
 export const checkForUpdates = (): void => {
-  autoUpdater.checkForUpdates()
+  // autoUpdater.checkForUpdates()
 }

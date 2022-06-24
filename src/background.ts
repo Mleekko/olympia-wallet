@@ -90,11 +90,11 @@ const INACTIVITY_INTERVAL = 3600000
 const DEBOUNCE_INTERVAL = 1000
 // Set interaction detection time period to 1hr. If user does not move mouse or
 // interact with keyboard, refresh app and have User log in again.
-let idleInterval = setInterval(() => { win.reload()}, INACTIVITY_INTERVAL)
+let idleInterval = setInterval(() => { win.reload() }, INACTIVITY_INTERVAL)
 
 const resetInteractionTimer = () => {
   clearInterval(idleInterval)
-  idleInterval = setInterval(() => { win.reload() }, INACTIVITY_INTERVAL)  
+  idleInterval = setInterval(() => { win.reload() }, INACTIVITY_INTERVAL)
 }
 
 // Quit when all windows are closed.

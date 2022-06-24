@@ -122,7 +122,7 @@ import { defineComponent, Ref, ref, ComputedRef, computed, watch, onMounted } fr
 import { useForm, Field } from 'vee-validate'
 import { interval, Subscription } from 'rxjs'
 import { safelyUnwrapAddress, safelyUnwrapAmount, validateAmountOfType, validateGreaterThanZero } from '@/helpers/validateRadixTypes'
-import { AccountAddressT, AmountOrUnsafeInput, Token } from '@radixdlt/application'
+import { AccountAddressWrapperT, AmountOrUnsafeInput, Token } from '@radixdlt/application'
 import { asBigNumber } from '@/components/BigAmount.vue'
 import AmountField from '@/components/AmountField.vue'
 import ClickToCopy from '@/components/ClickToCopy.vue'
@@ -190,7 +190,7 @@ const WalletTransaction = defineComponent({
 
     setActiveTransactionForm('transaction')
 
-    const fetchAndRefreshAccountData = async (addr: AccountAddressT) => {
+    const fetchAndRefreshAccountData = async (addr: AccountAddressWrapperT) => {
       if (refreshSub.value) {
         refreshSub.value.unsubscribe()
         refreshSub.value = null

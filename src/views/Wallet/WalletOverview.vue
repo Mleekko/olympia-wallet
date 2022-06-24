@@ -220,7 +220,7 @@ const WalletOverview = defineComponent({
       if (!newActiveAddress) return
       if (oldActiveAddress && newActiveAddress.equals(oldActiveAddress)) return
       // Update balances when active address change
-      fetchAndRefreshSummaries(newActiveAddress)
+      fetchAndRefreshSummaries(newActiveAddress.getAddress())
     }, { immediate: true })
 
     /* ------

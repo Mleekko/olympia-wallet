@@ -13,7 +13,7 @@
 <script lang="ts">
 import { copyToClipboard } from '@/actions/vue/create-wallet'
 import { defineComponent, PropType, computed, ComputedRef, toRef } from 'vue'
-import { AmountT } from '@radixdlt/application'
+import { AmountOrUnsafeInput, AmountT, AmountWrapperT } from '@radixdlt/application'
 import BigNumber from 'bignumber.js'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
@@ -122,7 +122,7 @@ export const asBigNumber = (amount: AmountT, showFull = false, displayFormat: Am
 const BigAmount = defineComponent({
   props: {
     amount: {
-      type: Object as PropType<AmountT>,
+      type: Object as PropType<AmountWrapperT | AmountOrUnsafeInput>,
       required: true
     },
     showMaxUnstakeText: {
