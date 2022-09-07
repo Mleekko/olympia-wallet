@@ -129,7 +129,7 @@ const activeAddresIsSoftwareAccount = () => {
     .flatMap((device) => device.addresses)
     .find((addr: HardwareAddress) => {
       if (!activeAddress.value) return false
-      return addr.address.equals(activeAddress.value)
+      return addr.address.equals(activeAddress.value?.getAddress())
     })
   if (hardwareAddress) {
     showLedgerInteractionModalBody.value = true

@@ -53,7 +53,7 @@ const WalletDeviceEditName = defineComponent({
       if (!devices) return
       return devices.find((device) => {
         if (!activeAddress.value) return false
-        return device.addresses[0].address.equals(activeAddress.value)
+        return device.addresses[0].address.equals(activeAddress.value?.getAddress())
       })
     }
 
